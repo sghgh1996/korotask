@@ -14,7 +14,7 @@ interface KInputProps {
   id?: string;
 }
 
-const props = withDefaults(defineProps<KInputProps>(), {
+withDefaults(defineProps<KInputProps>(), {
   modelValue: "",
   label: "",
   type: "text",
