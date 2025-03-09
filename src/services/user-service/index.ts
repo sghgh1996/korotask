@@ -2,33 +2,30 @@ import { useFetch } from "@vueuse/core";
 import type { Ref } from "vue";
 
 import { API_BASE_URL } from "~/utils/constants";
-import type { User } from "./types";
+import type { TUser } from "./types";
+import { handleFetchError, Result, tryCatch } from "~/utils/error-handler";
 
 const API_USERS_URL = `${API_BASE_URL}/users`;
 
 interface UseUserServiceReturn {
-  getAllUsers: () => Promise<Ref<User[] | null> | { error: any }>;
+  getAllUsers: () => Promise<Result<Ref<TUser[] | null>>>;
 }
 
 const useUserService = (): UseUserServiceReturn => {
-  const getAllUsers = async (): Promise<
-    Ref<User[] | null> | { error: any }
-  > => {
-    try {
-      const { data, error } = await useFetch<User[]>(API_USERS_URL).json();
+  const getAllUsers = async (): Promise<Result<Ref<TUser[] | null>>> => {
+    return tryCatch(async () => {
+      const { data, error, response, statusCode } = await useFetch<TUser[]>(
+        API_USERS_URL
+      ).json();
 
-      if (error.value) {
-        return { error: error.value };
-      }
+      handleFetchError(error, response, statusCode);
 
       return data;
-    } catch (err) {
-      return { error: err };
-    }
+    });
   };
 
   return {
-    getAllUsers
+    getAllUsers,
   };
 };
 

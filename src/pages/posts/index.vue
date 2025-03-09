@@ -9,27 +9,27 @@ import KInput from "~/components/design-system/KInput/index.vue";
 import usePostService from "~/services/post-service";
 import useUserService from "~/services/user-service";
 
-import type { Post } from '~/services/post-service/types';
-import type { User } from "~/services/user-service/types";
+import type { TError, TPost } from '~/services/post-service/types';
+import type { TUser } from "~/services/user-service/types";
 
 const { getAllPosts, deletePost } = usePostService();
 const { getAllUsers } = useUserService();
 
-const posts = ref<Post[]>([]);
-const users = ref<User[]>([]);
+const posts = ref<TPost[]>([]);
+const users = ref<TUser[]>([]);
 
-const error = ref<any>(null);
+const error = ref<TError>(null);
+const deleteError = ref<TError>(null);
 const isFetching = ref(false);
 const searchQuery = ref("");
 const debouncedSearchQuery = ref("");
 
-
 watch(searchQuery, debounce((newQuery: string) => {
   debouncedSearchQuery.value = newQuery;
-}, 300));
+}, 1000));
 
-const postsWithAuthors = computed<Post[]>(() => {
-  return posts.value.map((post: Post) => {
+const postsWithAuthors = computed<TPost[]>(() => {
+  return posts.value.map((post: TPost) => {
     const author = users.value.find((user) => user.id === post.userId);
 
     return {
@@ -39,58 +39,64 @@ const postsWithAuthors = computed<Post[]>(() => {
   });
 });
 
-const filteredPosts = computed<Post[]>(() => {
-  if (!searchQuery.value) return postsWithAuthors.value;
+const filteredPosts = computed<TPost[]>(() => {
+  if (!debouncedSearchQuery.value) return postsWithAuthors.value;
 
-  const query = searchQuery.value.toLowerCase();
+  const query = debouncedSearchQuery.value.toLowerCase();
   return postsWithAuthors.value.filter(
-    (post: Post) =>
+    (post: TPost) =>
       post.title.toLowerCase().includes(query) ||
       post.body.toLowerCase().includes(query)
   );
 });
 
 const handleDeletePost = async (id: number) => {
-  await deletePost(id);
-  posts.value = posts.value.filter(post => post.id !== id);
+  const deleteResult = await deletePost(id);
+
+  if (deleteResult._tag === 'Failure') {
+    deleteError.value = deleteResult.error;
+    alert(`Error deleting post: ${deleteResult.error.message}`); // Simple error alert
+    return;
+  }
+
+  if (deleteResult._tag === 'Success' && deleteResult.value.value) {
+    posts.value = posts.value.filter(post => post.id !== id);
+    alert('Post deleted successfully!'); // Simple success alert
+  } else {
+    alert("Post could not be deleted");
+  }
 };
 
-// Type guard to check if the response contains an error
-function hasError<T>(response: Ref<T | null> | { error: any }): response is { error: any } {
-  return typeof response === 'object' && response !== null && 'error' in response;
-}
-
-onMounted(async () => {
+const fetchData = async (): Promise<void> => {
   isFetching.value = true;
   error.value = null;
-  
-  try {
-    const [postsResponse, usersResponse] = await Promise.all([
-      getAllPosts(),
-      getAllUsers()
-    ]);
-    
-    // Check if either response contains an error
-    if (hasError(postsResponse)) {
-      error.value = postsResponse.error;
-      return;
-    }
-    
-    if (hasError(usersResponse)) {
-      error.value = usersResponse.error;
-      return;
-    }
-    
-    // At this point, TypeScript knows both responses are Ref<T | null>
-    // Extract values from the refs
-    posts.value = postsResponse.value || [];
-    users.value = usersResponse.value || [];
-    
-  } catch (err) {
-    error.value = err instanceof Error ? err : new Error('Unexpected error occurred');
-  } finally {
+
+  const [postsResult, usersResult] = await Promise.all([
+    getAllPosts(),
+    getAllUsers(),
+  ]);
+
+  // Check if either result is a Failure
+  if (postsResult._tag === 'Failure') {
+    error.value = postsResult.error;
     isFetching.value = false;
+    return;
   }
+
+  if (usersResult._tag === 'Failure') {
+    error.value = usersResult.error;
+    isFetching.value = false;
+    return;
+  }
+
+  // Extract values from the Success results
+  posts.value = postsResult._tag === 'Success' ? postsResult.value.value || [] : [];
+  users.value = usersResult._tag === 'Success' ? usersResult.value.value || [] : [];
+  isFetching.value = false;
+};
+
+onMounted(() => {
+  fetchData();
 });
 </script>
 
@@ -114,13 +120,6 @@ onMounted(async () => {
           Create New Post
         </KButton>
       </RouterLink>
-      <!-- <KButton
-        variant="primary"
-        @click="navigateToCreate"
-        class="whitespace-nowrap"
-      >
-        Create New Post
-      </KButton> -->
     </div>
 
     <div v-if="isFetching" class="text-center py-10">

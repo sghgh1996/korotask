@@ -1,97 +1,102 @@
 <script setup lang="ts">
-import { ref, onMounted, Ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import useUserService from "~/services/user-service";
 import usePostService from "~/services/post-service";
 import NewPostForm from "~/components/post/NewPostForm/index.vue";
-import { Post, PostForm } from "~/services/post-service/types";
-import { User } from "~/services/user-service/types";
+import {
+  isPost,
+  type TError,
+  type TPostForm,
+} from "~/services/post-service/types";
+import type { TUser } from "~/services/user-service/types";
 
 const route = useRoute();
+const router = useRouter();
+
 const { getPost, updatePost, createPost } = usePostService();
 const { getAllUsers } = useUserService();
 
-const post = ref<PostForm | null>(null);
-const users = ref<User[]>([]);
+const post = ref<TPostForm | null>(null);
+const users = ref<TUser[]>([]);
 const postId = route.query.id as string;
 const isEditing = ref(false);
 const isFetching = ref(false);
-const error = ref<string | null>(null);
+const error = ref<TError>(null);
+const submitError = ref<TError>(null);
 
-// Type guard to check if an object is a Post
-const isPost = (object: unknown): object is Post => {
-  if (object !== null && typeof object === "object") {
-    return (
-      "id" in object &&
-      "title" in object &&
-      "body" in object &&
-      "userId" in object
-    );
-  }
-  return false;
-};
-
-// Type guard to check if the response contains an error
-function hasError<T>(
-  response: Ref<T | null> | { error: any }
-): response is { error: any } {
-  return (
-    typeof response === "object" && response !== null && "error" in response
-  );
-}
-
-const fetchData = async () => {
+const fetchData = async (): Promise<void> => {
   isFetching.value = true;
   error.value = null;
 
-  try {
-    // Always fetch users
-    const usersResponse = await getAllUsers();
+  const usersResult = await getAllUsers();
 
-    if (hasError(usersResponse)) {
-      error.value = usersResponse.error;
+  if (usersResult._tag === "Failure") {
+    error.value = usersResult.error;
+    isFetching.value = false;
+    return;
+  }
+  users.value =
+    usersResult._tag === "Success" ? usersResult.value.value || [] : [];
+
+  if (postId) {
+    isEditing.value = true;
+    const postResult = await getPost(Number(postId));
+
+    if (postResult._tag === "Failure") {
+      error.value = postResult.error;
+      isFetching.value = false;
       return;
     }
 
-    users.value = usersResponse.value || [];
-
-    // Only fetch post if we're in edit mode (have an ID)
-    if (postId) {
-      isEditing.value = true;
-      const postResponse = await getPost(Number(postId));
-
-      if (hasError(postResponse)) {
-        error.value = postResponse.error;
-        return;
-      }
-
-      if (isPost(postResponse.value)) {
-        post.value = postResponse.value;
-      } else {
-        error.value = "Invalid post data received";
-      }
+    if (postResult._tag === "Success" && isPost(postResult.value.value)) {
+      post.value = postResult.value.value;
     } else {
-      // Initialize empty post for creation
-      post.value = {
-        title: "",
-        body: "",
-        userId: 0
-      };
+      error.value = "Invalid post data received";
     }
-  } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "An unknown error occurred";
-    console.error("Error fetching data:", err);
-  } finally {
-    isFetching.value = false;
+  } else {
+    post.value = {
+      title: "",
+      body: "",
+      userId: 0,
+    };
   }
+
+  isFetching.value = false;
 };
 
-const submitForm = (submittedPost: PostForm) => {
+const submitForm = async (submittedPost: TPostForm) => {
   if (isEditing.value) {
-    updatePost(Number(postId), submittedPost);
+    const updateResult = await updatePost(Number(postId), submittedPost);
+
+    if (updateResult._tag === "Failure") {
+      submitError.value = updateResult.error;
+      alert(`Error updating post: ${updateResult.error.message}`); // Simple error alert
+      return;
+    }
+
+    if (updateResult._tag === "Success" && isPost(updateResult.value.value)) {
+      alert("Post updated successfully!");
+      router.push("/posts");
+    } else {
+      alert("Post could not be updated");
+    }
   } else {
+    const createResult = await createPost(submittedPost);
+
+    if (createResult._tag === "Failure") {
+      submitError.value = createResult.error;
+      alert(`Error creating post: ${createResult.error.message}`); // Simple error alert
+      return;
+    }
+
+    if (createResult._tag === "Success" && isPost(createResult.value.value)) {
+      alert("Post created successfully!");
+      router.push("/posts");
+    } else {
+      alert("Post could not be created");
+    }
     createPost(submittedPost);
   }
 };
