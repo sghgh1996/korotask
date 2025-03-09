@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits } from 'vue';
 
-import KButton from "~/components/design-system/KButton/index.vue";
-import { PostTableProps } from "./types";
+import KButton from '~/components/design-system/KButton/index.vue';
+import { PostTableProps } from './types';
 
 const { posts = [] } = defineProps<PostTableProps>();
 
 const emit = defineEmits<{
-  (e: "deletePost", id: number): void;
+  (e: 'deletePost', id: number): void;
 }>();
 
 const confirmAndDeletePost = (postId: number) => {
-  emit("deletePost", postId);
+  emit('deletePost', postId);
 };
 
 // Define table columns
 const columns = [
-  { key: "title", label: "Title" },
-  { key: "description", label: "Description" },
-  { key: "author", label: "Author" },
-  { key: "actions", label: "Actions" },
+  { key: 'title', label: 'Title' },
+  { key: 'description', label: 'Description' },
+  { key: 'author', label: 'Author' },
+  { key: 'actions', label: 'Actions' }
 ];
 
 // Common classes
 const thClass =
-  "px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider";
-const tdClass = "px-6 py-4 text-center";
+  'px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider';
+const tdClass = 'px-6 py-4 text-center';
 </script>
 
 <template>
@@ -56,14 +56,12 @@ const tdClass = "px-6 py-4 text-center";
             </div>
           </td>
           <td :class="tdClass">
-            <div class="text-sm text-gray-500">{{ post.author || "-" }}</div>
+            <div class="text-sm text-gray-500">{{ post.author || '-' }}</div>
           </td>
           <td :class="tdClass">
             <div class="flex justify-center sm:justify-end space-x-2">
               <RouterLink :to="`/posts/new?id=${post.id}`" class="inline-block">
-                <KButton variant="primary" size="sm">
-                  Edit
-                </KButton>
+                <KButton variant="primary" size="sm"> Edit </KButton>
               </RouterLink>
               <KButton
                 variant="error"

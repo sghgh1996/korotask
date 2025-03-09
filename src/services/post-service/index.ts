@@ -1,10 +1,10 @@
-import { useFetch } from "@vueuse/core";
-import { ref, type Ref } from "vue";
+import { useFetch } from '@vueuse/core';
+import { ref, type Ref } from 'vue';
 
-import { API_BASE_URL } from "~/utils/constants";
-import { Result, tryCatch, handleFetchError } from "~/utils/error-handler";
+import { API_BASE_URL } from '~/utils/constants';
+import { Result, tryCatch, handleFetchError } from '~/utils/error-handler';
 
-import type { TPost } from "./types";
+import type { TPost } from './types';
 
 const API_POST_URL = `${API_BASE_URL}/posts`;
 
@@ -15,16 +15,16 @@ interface UsePostServiceReturn {
     id: number,
     post: Partial<TPost>
   ) => Promise<Result<Ref<TPost | null>>>;
-  createPost: (
-    post: Partial<TPost>
-  ) => Promise<Result<Ref<TPost | null>>>;
+  createPost: (post: Partial<TPost>) => Promise<Result<Ref<TPost | null>>>;
   deletePost: (id: number) => Promise<Result<Ref<boolean>>>;
 }
 
 const usePostService = (): UsePostServiceReturn => {
   const getPost = async (id: number): Promise<Result<Ref<TPost | null>>> => {
     return tryCatch(async () => {
-      const { data, error, response, statusCode } = await useFetch<TPost>(`${API_POST_URL}/${id}`).json();
+      const { data, error, response, statusCode } = await useFetch<TPost>(
+        `${API_POST_URL}/${id}`
+      ).json();
 
       handleFetchError(error, response, statusCode);
 
@@ -34,7 +34,8 @@ const usePostService = (): UsePostServiceReturn => {
 
   const getAllPosts = async (): Promise<Result<Ref<TPost[] | null>>> => {
     return tryCatch(async () => {
-      const { data, error, response, statusCode } = await useFetch<TPost[]>(API_POST_URL).json();
+      const { data, error, response, statusCode } =
+        await useFetch<TPost[]>(API_POST_URL).json();
 
       handleFetchError(error, response, statusCode);
 
@@ -47,13 +48,16 @@ const usePostService = (): UsePostServiceReturn => {
     post: Partial<TPost>
   ): Promise<Result<Ref<TPost | null>>> => {
     return tryCatch(async () => {
-      const { data, error, response, statusCode } = await useFetch<TPost>(`${API_POST_URL}/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(post),
-      }).json();
+      const { data, error, response, statusCode } = await useFetch<TPost>(
+        `${API_POST_URL}/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(post)
+        }
+      ).json();
 
       handleFetchError(error, response, statusCode);
 
@@ -65,13 +69,16 @@ const usePostService = (): UsePostServiceReturn => {
     post: Partial<TPost>
   ): Promise<Result<Ref<TPost | null>>> => {
     return tryCatch(async () => {
-      const { data, error, response, statusCode } = await useFetch<TPost>(API_POST_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(post),
-      }).json();
+      const { data, error, response, statusCode } = await useFetch<TPost>(
+        API_POST_URL,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(post)
+        }
+      ).json();
 
       handleFetchError(error, response, statusCode);
 
@@ -81,9 +88,12 @@ const usePostService = (): UsePostServiceReturn => {
 
   const deletePost = async (id: number): Promise<Result<Ref<boolean>>> => {
     return tryCatch(async () => {
-      const { error, response, statusCode } = await useFetch(`${API_POST_URL}/${id}`, {
-        method: 'DELETE',
-      });
+      const { error, response, statusCode } = await useFetch(
+        `${API_POST_URL}/${id}`,
+        {
+          method: 'DELETE'
+        }
+      );
 
       handleFetchError(error, response, statusCode);
 
@@ -96,7 +106,7 @@ const usePostService = (): UsePostServiceReturn => {
     getAllPosts,
     updatePost,
     createPost,
-    deletePost,
+    deletePost
   };
 };
 

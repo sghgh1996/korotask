@@ -1,4 +1,4 @@
-import { ShallowRef } from "vue";
+import { ShallowRef } from 'vue';
 import {
   ApiError,
   NotFoundError,
@@ -7,7 +7,7 @@ import {
   InternalServerError,
   BadRequestError,
   ServiceUnavailableError,
-  NetworkError,
+  NetworkError
 } from './errors';
 
 export interface Success<T> {
@@ -22,14 +22,14 @@ export interface Failure<E extends Error> {
 
 export const success = <T>(value: T): Result<T, never> => ({
   _tag: 'Success',
-  value,
+  value
 });
 
 export type Result<T, E extends Error = Error> = Success<T> | Failure<E>;
 
 export const failure = <E extends Error>(error: E): Result<never, E> => ({
   _tag: 'Failure',
-  error,
+  error
 });
 
 export const tryCatch = async <T>(

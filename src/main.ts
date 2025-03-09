@@ -1,19 +1,19 @@
-import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createApp } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
 
 // TODO: Fix the type error
 // @ts-ignore
-import routes from 'virtual:generated-pages'
+import routes from 'virtual:generated-pages';
 
-import './styles/global.css'
-import App from './App.vue'
+import './styles/global.css';
+import App from './App.vue';
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-})
+  routes
+});
 
-const app = createApp(App)
+const app = createApp(App);
 
-app.use(router)
-app.mount('#app')
+app.use(router);
+app.mount('#app');

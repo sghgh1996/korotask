@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits } from 'vue';
 
 interface KInputProps {
   modelValue?: string | number;
@@ -11,41 +11,41 @@ interface KInputProps {
   maxlength?: number | string;
   errorMessage?: string;
   id?: string;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const props = withDefaults(defineProps<KInputProps>(), {
-  modelValue: "",
-  label: "",
-  type: "text",
-  placeholder: "",
+  modelValue: '',
+  label: '',
+  type: 'text',
+  placeholder: '',
   disabled: false,
   required: false,
-  errorMessage: "",
+  errorMessage: '',
   id: () => `input-${Math.random().toString(36).substring(2, 9)}`,
-  size: "md",
+  size: 'md'
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
-  (e: "blur", event: FocusEvent): void;
-  (e: "focus", event: FocusEvent): void;
+  (e: 'update:modelValue', value: string): void;
+  (e: 'blur', event: FocusEvent): void;
+  (e: 'focus', event: FocusEvent): void;
 }>();
 
 const updateValue = (event: Event) => {
-  emit("update:modelValue", (event.target as HTMLInputElement).value);
+  emit('update:modelValue', (event.target as HTMLInputElement).value);
 };
 
 // Computed input classes based on props
 const inputClasses = [
-  "w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500",
-  "disabled:bg-gray-100 disabled:cursor-not-allowed",
-  props.errorMessage ? "border-red-500" : "border-gray-300",
+  'w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500',
+  'disabled:bg-gray-100 disabled:cursor-not-allowed',
+  props.errorMessage ? 'border-red-500' : 'border-gray-300',
   {
-    sm: "px-2 py-1 text-sm",
-    md: "px-3 py-2 text-base",
-    lg: "px-4 py-3 text-lg",
-  }[props.size],
+    sm: 'px-2 py-1 text-sm',
+    md: 'px-3 py-2 text-base',
+    lg: 'px-4 py-3 text-lg'
+  }[props.size]
 ];
 </script>
 

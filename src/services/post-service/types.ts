@@ -6,7 +6,7 @@ export interface TPost {
   author?: string;
 }
 
-export type TPostForm = Omit<TPost, "id" | "author">;
+export type TPostForm = Omit<TPost, 'id' | 'author'>;
 
 // Type guard to check if an object is a Post
 export function isPost(value: any): value is TPost {
