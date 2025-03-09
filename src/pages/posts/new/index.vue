@@ -2,9 +2,12 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import NewPostForm from "~/components/post/NewPostForm/index.vue";
+import AppContainer from "~/components/layout/AppContainer.vue";
+import AppLoading from "~/components/layout/AppLoading.vue";
+
 import useUserService from "~/services/user-service";
 import usePostService from "~/services/post-service";
-import NewPostForm from "~/components/post/NewPostForm/index.vue";
 import {
   isPost,
   type TError,
@@ -107,7 +110,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-4 py-8 min-h-screen">
+  <AppContainer>
     <div
       v-if="error"
       class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
@@ -119,11 +122,7 @@ onMounted(() => {
       {{ isEditing ? "Edit Post" : "Create New Post" }}
     </h1>
 
-    <div v-if="isFetching" class="flex justify-center py-8">
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"
-      ></div>
-    </div>
+    <AppLoading v-if="isFetching" />
 
     <NewPostForm
       v-else
@@ -132,5 +131,5 @@ onMounted(() => {
       :isEditing="isEditing"
       @submit="submitForm"
     />
-  </div>
+  </AppContainer>
 </template>

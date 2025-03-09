@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
 
@@ -12,9 +11,10 @@ interface KInputProps {
   maxlength?: number | string;
   errorMessage?: string;
   id?: string;
+  size?: "sm" | "md" | "lg";
 }
 
-withDefaults(defineProps<KInputProps>(), {
+const props = withDefaults(defineProps<KInputProps>(), {
   modelValue: "",
   label: "",
   type: "text",
@@ -23,6 +23,7 @@ withDefaults(defineProps<KInputProps>(), {
   required: false,
   errorMessage: "",
   id: () => `input-${Math.random().toString(36).substring(2, 9)}`,
+  size: "md",
 });
 
 const emit = defineEmits<{
@@ -34,14 +35,31 @@ const emit = defineEmits<{
 const updateValue = (event: Event) => {
   emit("update:modelValue", (event.target as HTMLInputElement).value);
 };
+
+// Computed input classes based on props
+const inputClasses = [
+  "w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500",
+  "disabled:bg-gray-100 disabled:cursor-not-allowed",
+  props.errorMessage ? "border-red-500" : "border-gray-300",
+  {
+    sm: "px-2 py-1 text-sm",
+    md: "px-3 py-2 text-base",
+    lg: "px-4 py-3 text-lg",
+  }[props.size],
+];
 </script>
 
 <template>
-  <div class="mb-4">
-    <label v-if="label" :for="id" class="block mb-2 font-medium">{{
-      label
-    }}</label>
-    <div>
+  <div class="mb-4 w-full">
+    <label
+      v-if="label"
+      :for="id"
+      class="block font-medium text-gray-700 text-sm md:text-base"
+    >
+      {{ label }}<span v-if="required" class="text-red-500 ml-1">*</span>
+    </label>
+
+    <div class="relative">
       <input
         :id="id"
         :type="type"
@@ -50,14 +68,19 @@ const updateValue = (event: Event) => {
         :disabled="disabled"
         :required="required"
         :maxlength="maxlength"
-        class="w-full px-3 py-2 text-base border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        :class="inputClasses"
         @input="updateValue"
         @blur="$emit('blur', $event)"
         @focus="$emit('focus', $event)"
       />
-      <span v-if="errorMessage" class="block mt-1 text-sm text-red-600 error-message">{{
-        errorMessage
-      }}</span>
+    </div>
+
+    <div
+      v-if="errorMessage"
+      class="mt-1 text-sm text-red-600 transition-all"
+      role="alert"
+    >
+      {{ errorMessage }}
     </div>
   </div>
 </template>

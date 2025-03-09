@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import KButton from "~/components/design-system/KButton/index.vue";
+import AppContainer from "~/components/layout/AppContainer.vue";
 </script>
 
-<!-- TODO: complete the documentation for the project -->
+<!-- TODO: complete the documentation for the  -->
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen py-12 flex flex-col items-center justify-center text-center">
+  <AppContainer>
     <h1 class="text-4xl font-bold mb-6 text-indigo-700">Welcome to My Coding Assignment</h1>
     
     <p class="text-2xl mb-8 text-gray-700">
@@ -39,10 +40,10 @@ import KButton from "~/components/design-system/KButton/index.vue";
       </p>
     </div>
     
-    <router-link to="/posts" class="inline-block">
+    <RouterLink to="/posts" class="inline-block">
       <KButton variant="primary">
         Explore Posts
       </KButton>
-    </router-link>
-  </div>
+    </RouterLink>
+  </AppContainer>
 </template>

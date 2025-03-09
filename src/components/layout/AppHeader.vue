@@ -1,21 +1,26 @@
 <template>
-  <header class="bg-slate-900 text-white py-4 px-8 flex justify-between items-center">
+  <header class="bg-slate-900 text-white py-3 md:py-4 px-4 md:px-8 flex justify-between items-center shadow-md">
     <div>
-      <router-link to="/" class="text-2xl font-bold">
+      <RouterLink to="/" class="text-xl md:text-2xl font-bold hover:text-gray-200 transition-colors">
         KoroTask
-      </router-link>
+      </RouterLink>
     </div>
 
-    <nav aria-label="Primary Navigation" class="flex space-x-8">
-      <router-link to="/" class="hover:text-gray-400">
+    <nav aria-label="Primary Navigation" class="flex space-x-4 md:space-x-8">
+      <RouterLink 
+        to="/" 
+        class="hover:text-gray-400 transition-colors py-1 px-2"
+        active-class="border-b-2 border-blue-400"
+      >
         Home
-      </router-link>
-      <router-link
+      </RouterLink>
+      <RouterLink
         to="/posts"
-        class="hover:text-gray-400"
+        class="hover:text-gray-400 transition-colors py-1 px-2"
+        active-class="border-b-2 border-blue-400"
       >
         Posts
-      </router-link>
+      </RouterLink>
     </nav>
   </header>
 </template>

@@ -5,12 +5,14 @@ interface ButtonProps {
   variant?: "primary" | "success" | "error";
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  size?: "sm" | "md" | "lg"; // New size prop
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   variant: "primary",
   disabled: false,
   type: "button",
+  size: "md", // Default medium size
 });
 
 const emit = defineEmits<{
@@ -19,7 +21,13 @@ const emit = defineEmits<{
 
 const buttonClasses = computed(() => {
   const baseClasses =
-    "rounded-md font-medium transition-all px-4 py-2 focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2";
+
+  const sizeClasses = {
+    sm: "text-xs px-2.5 py-1.5",
+    md: "text-sm px-4 py-2",
+    lg: "text-base px-6 py-3",
+  };
 
   const variantClasses = {
     primary:
@@ -32,7 +40,9 @@ const buttonClasses = computed(() => {
     ? "opacity-50 cursor-not-allowed"
     : "cursor-pointer";
 
-  return `${baseClasses} ${variantClasses[props.variant]} ${disabledClasses}`;
+  return `${baseClasses} ${sizeClasses[props.size]} ${
+    variantClasses[props.variant]
+  } ${disabledClasses}`;
 });
 
 const handleClick = (event: MouseEvent) => {
