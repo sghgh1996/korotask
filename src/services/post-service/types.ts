@@ -1,6 +1,9 @@
 export interface Post {
   id: number;
-  userId: number;
   title: string;
   body: string;
+  userId: number;
+  author?: string;
 }
+
+export type PostForm = Omit<Post, "id" | "author">;

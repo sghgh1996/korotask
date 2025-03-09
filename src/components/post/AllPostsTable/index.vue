@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from "vue";
 
-import { Post } from '~/services/post-service/types';
 import KButton from "~/components/design-system/KButton/index.vue";
+import { PostTableProps } from "./types";
 
-interface PostTableProps {
-  posts: Post[];
-}
+const { posts = [] } = defineProps<PostTableProps>();
 
-const { posts = [] } = defineProps<PostTableProps>()
-
-const navigateToEdit = (postId: number) => {
-  // Add navigation logic here
-};
+const emit = defineEmits<{
+  (e: "deletePost", id: number): void;
+}>();
 
 const confirmAndDeletePost = (postId: number) => {
-  // Add delete confirmation and logic here
+  emit("deletePost", postId);
 };
 </script>
 
@@ -62,17 +58,15 @@ const confirmAndDeletePost = (postId: number) => {
           </div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <div class="text-sm text-gray-500">{{ post.userId }}</div>
+          <div class="text-sm text-gray-500">{{ post.author || '-' }}</div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <div class="flex justify-end space-x-2">
-            <KButton
-              variant="primary"
-              @click="navigateToEdit(post.id)"
-              class="text-xs px-3 py-1"
-            >
-              Edit
-            </KButton>
+            <RouterLink :to="`/posts/new?id=${post.id}`" class="inline-block">
+              <KButton variant="primary" class="whitespace-nowrap">
+                Edit
+              </KButton>
+            </RouterLink>
             <KButton
               variant="error"
               @click="confirmAndDeletePost(post.id)"

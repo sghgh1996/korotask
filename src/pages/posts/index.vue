@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, Ref } from "vue";
 import { debounce } from 'lodash';
 
 import AllPostsTable from '~/components/post/AllPostsTable/index.vue';
@@ -7,53 +7,91 @@ import KButton from "~/components/design-system/KButton/index.vue";
 import KInput from "~/components/design-system/KInput/index.vue";
 
 import usePostService from "~/services/post-service";
+import useUserService from "~/services/user-service";
+
 import type { Post } from '~/services/post-service/types';
+import type { User } from "~/services/user-service/types";
+
+const { getAllPosts, deletePost } = usePostService();
+const { getAllUsers } = useUserService();
 
 const posts = ref<Post[]>([]);
+const users = ref<User[]>([]);
+
 const error = ref<any>(null);
 const isFetching = ref(false);
-
-const { getAllPosts } = usePostService();
-
-onMounted(async () => {
-  isFetching.value = true;
-  
-  try {
-    const getAllPostsResult = await getAllPosts();
-
-    if ('error' in getAllPostsResult) {
-      error.value = getAllPostsResult.error;
-      return;
-    }
-
-    posts.value = getAllPostsResult.value || [];
-  } catch (err) {
-    error.value = err;
-  } finally {
-    isFetching.value = false;
-  }
-});
-
 const searchQuery = ref("");
 const debouncedSearchQuery = ref("");
+
 
 watch(searchQuery, debounce((newQuery: string) => {
   debouncedSearchQuery.value = newQuery;
 }, 300));
+
+const postsWithAuthors = computed<Post[]>(() => {
+  return posts.value.map((post: Post) => {
+    const author = users.value.find((user) => user.id === post.userId);
+
+    return {
+      ...post,
+      author: author ? author.name : 'Unknown',
+    };
+  });
+});
+
 const filteredPosts = computed<Post[]>(() => {
-  if (!searchQuery.value) return posts.value;
+  if (!searchQuery.value) return postsWithAuthors.value;
 
   const query = searchQuery.value.toLowerCase();
-  return posts.value.filter(
+  return postsWithAuthors.value.filter(
     (post: Post) =>
       post.title.toLowerCase().includes(query) ||
       post.body.toLowerCase().includes(query)
   );
 });
 
-const navigateToCreate = () => {
-  console.log("Navigating to create post page");
+const handleDeletePost = async (id: number) => {
+  await deletePost(id);
+  posts.value = posts.value.filter(post => post.id !== id);
 };
+
+// Type guard to check if the response contains an error
+function hasError<T>(response: Ref<T | null> | { error: any }): response is { error: any } {
+  return typeof response === 'object' && response !== null && 'error' in response;
+}
+
+onMounted(async () => {
+  isFetching.value = true;
+  error.value = null;
+  
+  try {
+    const [postsResponse, usersResponse] = await Promise.all([
+      getAllPosts(),
+      getAllUsers()
+    ]);
+    
+    // Check if either response contains an error
+    if (hasError(postsResponse)) {
+      error.value = postsResponse.error;
+      return;
+    }
+    
+    if (hasError(usersResponse)) {
+      error.value = usersResponse.error;
+      return;
+    }
+    
+    // At this point, TypeScript knows both responses are Ref<T | null>
+    // Extract values from the refs
+    posts.value = postsResponse.value || [];
+    users.value = usersResponse.value || [];
+    
+  } catch (err) {
+    error.value = err instanceof Error ? err : new Error('Unexpected error occurred');
+  } finally {
+    isFetching.value = false;
+  }
+});
 </script>
 
 <template>
@@ -71,13 +109,18 @@ const navigateToCreate = () => {
         />
       </div>
 
-      <KButton
+      <RouterLink to="/posts/new" class="inline-block">
+        <KButton variant="primary" class="whitespace-nowrap">
+          Create New Post
+        </KButton>
+      </RouterLink>
+      <!-- <KButton
         variant="primary"
         @click="navigateToCreate"
         class="whitespace-nowrap"
       >
         Create New Post
-      </KButton>
+      </KButton> -->
     </div>
 
     <div v-if="isFetching" class="text-center py-10">
@@ -89,7 +132,7 @@ const navigateToCreate = () => {
     </div>
 
     <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
-      <AllPostsTable :posts="filteredPosts" />
+      <AllPostsTable :posts="filteredPosts" @deletePost="handleDeletePost" />
     </div>
   </div>
 </template>
