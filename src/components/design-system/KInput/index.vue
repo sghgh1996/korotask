@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, computed } from 'vue';
+import { defineEmits, computed } from 'vue';
 
 interface KInputProps {
   modelValue?: string | number;
