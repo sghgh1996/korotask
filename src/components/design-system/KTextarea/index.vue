@@ -1,44 +1,43 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, computed } from 'vue';
 
-interface KInputProps {
-  modelValue?: string | number;
+interface KTextareaProps {
+  modelValue: string;
   label?: string;
-  type?: string;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
-  maxlength?: number | string;
+  rows?: number;
+  maxlength?: number;
   errorMessage?: string;
   id?: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const props = withDefaults(defineProps<KInputProps>(), {
+const props = withDefaults(defineProps<KTextareaProps>(), {
   modelValue: '',
   label: '',
-  type: 'text',
   placeholder: '',
   disabled: false,
   required: false,
+  rows: 5,
   errorMessage: '',
-  id: () => `input-${Math.random().toString(36).substring(2, 9)}`,
+  id: () => `textarea-${Math.random().toString(36).substring(2, 9)}`,
   size: 'md'
 });
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
   (e: 'blur', event: FocusEvent): void;
-  (e: 'focus', event: FocusEvent): void;
   (e: 'input', event: Event): void;
 }>();
 
 const updateValue = (event: Event) => {
-  emit('update:modelValue', (event.target as HTMLInputElement).value);
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value);
   emit('input', event);
 };
 
-const inputClasses = computed(() => [
+const textareaClasses = computed(() => [
   'w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500',
   'disabled:bg-gray-100 disabled:cursor-not-allowed',
   props.errorMessage ? 'border-red-500' : 'border-gray-300',
@@ -55,25 +54,24 @@ const inputClasses = computed(() => [
     <label
       v-if="label"
       :for="id"
-      class="block font-medium text-gray-700 text-sm md:text-base"
+      class="block mb-2 text-sm sm:text-base font-medium text-gray-700"
     >
       {{ label }}<span v-if="required" class="text-red-500 ml-1">*</span>
     </label>
 
     <div class="relative">
-      <input
+      <textarea
         :id="id"
-        :type="type"
         :value="modelValue"
         :placeholder="placeholder"
         :disabled="disabled"
         :required="required"
+        :rows="rows"
         :maxlength="maxlength"
-        :class="inputClasses"
+        :class="textareaClasses"
         @input="updateValue"
         @blur="$emit('blur', $event)"
-        @focus="$emit('focus', $event)"
-      />
+      ></textarea>
     </div>
 
     <div

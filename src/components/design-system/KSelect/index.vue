@@ -1,44 +1,45 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, computed } from 'vue';
 
-interface KInputProps {
-  modelValue?: string | number;
+interface Option {
+  value: string | number;
+  label: string;
+}
+
+interface KSelectProps {
+  modelValue: string | number;
+  options: Option[];
   label?: string;
-  type?: string;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
-  maxlength?: number | string;
   errorMessage?: string;
   id?: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const props = withDefaults(defineProps<KInputProps>(), {
-  modelValue: '',
+const props = withDefaults(defineProps<KSelectProps>(), {
   label: '',
-  type: 'text',
-  placeholder: '',
+  placeholder: 'Select an option',
   disabled: false,
   required: false,
   errorMessage: '',
-  id: () => `input-${Math.random().toString(36).substring(2, 9)}`,
+  id: () => `select-${Math.random().toString(36).substring(2, 9)}`,
   size: 'md'
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
+  (e: 'update:modelValue', value: string | number): void;
   (e: 'blur', event: FocusEvent): void;
-  (e: 'focus', event: FocusEvent): void;
-  (e: 'input', event: Event): void;
+  (e: 'change', event: Event): void;
 }>();
 
 const updateValue = (event: Event) => {
-  emit('update:modelValue', (event.target as HTMLInputElement).value);
-  emit('input', event);
+  emit('update:modelValue', (event.target as HTMLSelectElement).value);
+  emit('change', event);
 };
 
-const inputClasses = computed(() => [
+const selectClasses = computed(() => [
   'w-full border rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500',
   'disabled:bg-gray-100 disabled:cursor-not-allowed',
   props.errorMessage ? 'border-red-500' : 'border-gray-300',
@@ -61,19 +62,27 @@ const inputClasses = computed(() => [
     </label>
 
     <div class="relative">
-      <input
+      <select
         :id="id"
-        :type="type"
         :value="modelValue"
-        :placeholder="placeholder"
         :disabled="disabled"
         :required="required"
-        :maxlength="maxlength"
-        :class="inputClasses"
+        :class="selectClasses"
         @input="updateValue"
         @blur="$emit('blur', $event)"
-        @focus="$emit('focus', $event)"
-      />
+      >
+        <option v-if="options.length === 0" value="" disabled>
+          No authors available
+        </option>
+        <option value="0" disabled>{{ placeholder }}</option>
+        <option
+          v-for="option in options"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select>
     </div>
 
     <div
