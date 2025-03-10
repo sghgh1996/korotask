@@ -2,9 +2,12 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
+import TestIds from '~cypress/types/testIds.ts';
+
 import NewPostForm from '~/components/post/NewPostForm/index.vue';
 import AppContainer from '~/components/common/AppContainer.vue';
 import AppLoading from '~/components/common/AppLoading.vue';
+import AppError from '~/components/common/AppError.vue';
 
 import useUserService from '~/services/user-service';
 import usePostService from '~/services/post-service';
@@ -74,14 +77,16 @@ onMounted(() => {
 
 <template>
   <AppContainer>
-    <div
-      v-if="error"
-      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-    >
-      <p>{{ error }}</p>
-    </div>
+    <AppLoading
+      v-if="isFetching"
+      :data-testid="TestIds.NEW_POST_PAGE_LOADING"
+    />
 
-    <AppLoading v-if="isFetching" />
+    <AppError
+      v-else-if="error"
+      :message="error?.toString()"
+      :data-testid="TestIds.NEW_POST_PAGE_ERROR"
+    />
 
     <NewPostForm
       v-else

@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
     "pretty": "prettier --write \"./src/**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue,scss,css}\""
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
+    "cypress": "^14.1.0",
     "jsdom": "^26.0.0",
     "prettier": "^3.5.3",
     "typescript": "~5.7.2",

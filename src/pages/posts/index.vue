@@ -2,8 +2,11 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { debounce } from 'lodash';
 
+import TestIds from '~cypress/types/testIds.ts';
+
 import AppContainer from '~/components/common/AppContainer.vue';
 import AppLoading from '~/components/common/AppLoading.vue';
+import AppError from '~/components/common/AppError.vue';
 import AllPostsTable from '~/components/post/AllPostsTable/index.vue';
 import KButton from '~/components/design-system/KButton/index.vue';
 import KInput from '~/components/design-system/KInput/index.vue';
@@ -56,7 +59,7 @@ const filteredPosts = computed<TPost[]>(() => {
 });
 
 const handlePostDeleted = (id: number) => {
-  posts.value = posts.value.filter(post => post.id !== id);
+  posts.value = posts.value.filter((post) => post.id !== id);
 };
 
 const fetchData = async (): Promise<void> => {
@@ -106,6 +109,7 @@ onMounted(() => {
           v-model="searchQuery"
           placeholder="Search posts..."
           type="text"
+          :data-testid="TestIds.POSTS_SEARCH_INPUT"
         />
       </div>
 
@@ -116,14 +120,21 @@ onMounted(() => {
       </RouterLink>
     </div>
 
-    <AppLoading v-if="isFetching" />
+    <AppLoading v-if="isFetching" :data-testid="TestIds.POSTS_LOADING" />
 
-    <div v-else-if="error" class="bg-red-50 p-4 rounded-md text-red-600 mb-4">
+    <!-- <div v-else-if="error" class="bg-red-50 p-4 rounded-md text-red-600 mb-4">
       <p>Failed to load posts. Please try again later.</p>
-    </div>
+    </div> -->
+
+    <AppError
+      v-else-if="error"
+      :data-testid="TestIds.POSTS_ERROR"
+      message="Failed to load posts. Please try again later."
+    />
 
     <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
       <AllPostsTable
+        :data-testid="TestIds.POSTS_CONTAINER"
         :posts="filteredPosts"
         @post-deleted="handlePostDeleted"
       />

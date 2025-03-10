@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { defineProps, defineEmits, ref } from 'vue';
 
+import TestIds from '~cypress/types/testIds.ts';
+
 import KButton from '~/components/design-system/KButton/index.vue';
 import usePostService from '~/services/post-service';
 import { PostTableProps } from './types';
@@ -66,25 +68,47 @@ const tdClass = 'px-6 py-4 text-center';
           </th>
         </tr>
       </thead>
+
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="post in posts" :key="post.id" class="hover:bg-gray-50">
+        <tr
+          v-for="post in posts"
+          :key="post.id"
+          class="hover:bg-gray-50"
+          :data-testid="TestIds.POSTS_ROW"
+        >
           <td :class="tdClass">
-            <div class="text-sm font-medium text-gray-900">
+            <div
+              class="text-sm font-medium text-gray-900"
+              :data-testid="TestIds.POSTS_ROW_TITLE"
+            >
               {{ post.title }}
             </div>
           </td>
           <td :class="tdClass">
-            <div class="text-sm text-gray-500 line-clamp-2 max-w-xs">
+            <div
+              class="text-sm text-gray-500 line-clamp-2 max-w-xs"
+              :data-testid="TestIds.POSTS_ROW_BODY"
+            >
               {{ post.body }}
             </div>
           </td>
           <td :class="tdClass">
-            <div class="text-sm text-gray-500">{{ post.author || '-' }}</div>
+            <div
+              class="text-sm text-gray-500"
+              :data-testid="TestIds.POSTS_ROW_AUTHOR"
+            >
+              {{ post.author || '-' }}
+            </div>
           </td>
           <td :class="tdClass">
             <div class="flex justify-center sm:justify-end space-x-2">
               <RouterLink :to="`/posts/new?id=${post.id}`" class="inline-block">
-                <KButton variant="primary" size="sm"> Edit </KButton>
+                <KButton
+                  variant="primary"
+                  size="sm"
+                  :data-testid="TestIds.POST_EDIT_BUTTON"
+                  >Edit</KButton
+                >
               </RouterLink>
 
               <KButton
@@ -92,6 +116,7 @@ const tdClass = 'px-6 py-4 text-center';
                 size="sm"
                 :disabled="deletingPostId === post.id"
                 @click="handleDeletePost(post.id)"
+                :data-testid="TestIds.POST_DELETE_BUTTON"
               >
                 {{ deletingPostId === post.id ? 'Deleting...' : 'Delete' }}
               </KButton>
@@ -99,7 +124,6 @@ const tdClass = 'px-6 py-4 text-center';
           </td>
         </tr>
 
-        <!-- Empty state when no posts match search -->
         <tr v-if="posts.length === 0">
           <td colspan="4" class="px-6 py-10 text-center text-gray-500">
             No posts found. Please try a different search or create a new post.
