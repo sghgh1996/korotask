@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import NewPostForm from '~/components/post/NewPostForm/index.vue';
-import AppContainer from '~/components/layout/AppContainer.vue';
-import AppLoading from '~/components/layout/AppLoading.vue';
+import AppContainer from '~/components/common/AppContainer.vue';
+import AppLoading from '~/components/common/AppLoading.vue';
 
 import useUserService from '~/services/user-service';
 import usePostService from '~/services/post-service';
@@ -16,9 +16,8 @@ import {
 import type { TUser } from '~/services/user-service/types';
 
 const route = useRoute();
-const router = useRouter();
 
-const { getPost, updatePost, createPost } = usePostService();
+const { getPost } = usePostService();
 const { getAllUsers } = useUserService();
 
 const post = ref<TPostForm | null>(null);
@@ -27,7 +26,6 @@ const postId = route.query.id as string;
 const isEditing = ref(false);
 const isFetching = ref(false);
 const error = ref<TError>(null);
-const submitError = ref<TError>(null);
 
 const fetchData = async (): Promise<void> => {
   isFetching.value = true;
@@ -69,41 +67,6 @@ const fetchData = async (): Promise<void> => {
   isFetching.value = false;
 };
 
-const submitForm = async (submittedPost: TPostForm) => {
-  if (isEditing.value) {
-    const updateResult = await updatePost(Number(postId), submittedPost);
-
-    if (updateResult._tag === 'Failure') {
-      submitError.value = updateResult.error;
-      alert(`Error updating post: ${updateResult.error.message}`); // Simple error alert
-      return;
-    }
-
-    if (updateResult._tag === 'Success' && isPost(updateResult.value.value)) {
-      alert('Post updated successfully!');
-      router.push('/posts');
-    } else {
-      alert('Post could not be updated');
-    }
-  } else {
-    const createResult = await createPost(submittedPost);
-
-    if (createResult._tag === 'Failure') {
-      submitError.value = createResult.error;
-      alert(`Error creating post: ${createResult.error.message}`); // Simple error alert
-      return;
-    }
-
-    if (createResult._tag === 'Success' && isPost(createResult.value.value)) {
-      alert('Post created successfully!');
-      router.push('/posts');
-    } else {
-      alert('Post could not be created');
-    }
-    createPost(submittedPost);
-  }
-};
-
 onMounted(() => {
   fetchData();
 });
@@ -118,18 +81,14 @@ onMounted(() => {
       <p>{{ error }}</p>
     </div>
 
-    <h1 class="text-2xl font-bold mb-4">
-      {{ isEditing ? 'Edit Post' : 'Create New Post' }}
-    </h1>
-
     <AppLoading v-if="isFetching" />
 
     <NewPostForm
       v-else
       :post="post"
       :users="users"
-      :isEditing="isEditing"
-      @submit="submitForm"
+      :is-editing="isEditing"
+      :post-id="postId"
     />
   </AppContainer>
 </template>

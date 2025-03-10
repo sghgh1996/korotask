@@ -1,28 +1,64 @@
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import type { TPostForm } from '~/services/post-service/types';
+import usePostService from '~/services/post-service';
+import type { TUser } from '~/services/user-service/types';
+
+import { useToast } from '~/composables/useToast';
 
 import KInput from '~/components/design-system/KInput/index.vue';
 import KButton from '~/components/design-system/KButton/index.vue';
-
-import type { TPostForm } from '~/services/post-service/types';
-import type { TUser } from '~/services/user-service/types';
 
 const props = defineProps<{
   post: TPostForm | null;
   users: TUser[];
   isEditing: boolean;
+  postId?: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'submit', post: TPostForm): void;
-}>();
+const router = useRouter();
+
+const { createPost, updatePost } = usePostService();
+const { toast } = useToast();
 
 const post = ref<TPostForm>(
   props.post ? { ...props.post } : { title: '', body: '', userId: 0 }
 );
+const isSubmitting = ref(false);
 
-const handleSubmit = () => {
-  emit('submit', post.value);
+const handleSubmit = async () => {
+  try {
+    isSubmitting.value = true;
+    
+    if (props.isEditing && props.postId) {
+      const updateResult = await updatePost(Number(props.postId), post.value);
+
+      if (updateResult._tag === 'Failure') {
+        toast(`Error updating post: ${updateResult.error.message}`, 'error');
+        return;
+      }
+
+      if (updateResult._tag === 'Success') {
+        toast('Post updated successfully!', 'success');
+      }
+    } else {
+      const createResult = await createPost(post.value);
+
+      if (createResult._tag === 'Failure') {
+        toast(`Error creating post: ${createResult.error.message}`, 'error');
+        return;
+      }
+
+      if (createResult._tag === 'Success') {
+        toast('Post created successfully!', 'success');
+        router.push('/posts');
+      }
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 
@@ -76,8 +112,16 @@ const handleSubmit = () => {
       </div>
 
       <div class="pt-4">
-        <KButton variant="primary" type="submit" class="w-full sm:w-auto">
-          {{ isEditing ? 'Update Post' : 'Create Post' }}
+        <KButton 
+          variant="primary" 
+          type="submit" 
+          :disabled="isSubmitting"
+          class="w-full sm:w-auto"
+        >
+          {{ isSubmitting 
+            ? (isEditing ? 'Updating...' : 'Creating...') 
+            : (isEditing ? 'Update Post' : 'Create Post') 
+          }}
         </KButton>
       </div>
     </form>

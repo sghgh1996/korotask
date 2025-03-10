@@ -1,17 +1,40 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
 
 import KButton from '~/components/design-system/KButton/index.vue';
+import usePostService from '~/services/post-service';
 import { PostTableProps } from './types';
+import { useToast } from '~/composables/useToast';
 
-const { posts = [] } = defineProps<PostTableProps>();
+defineProps<PostTableProps>();
 
 const emit = defineEmits<{
-  (e: 'deletePost', id: number): void;
+  (e: 'postDeleted', id: number): void;
 }>();
 
-const confirmAndDeletePost = (postId: number) => {
-  emit('deletePost', postId);
+const { deletePost } = usePostService();
+const { toast } = useToast();
+const deletingPostId = ref<number | null>(null);
+
+const handleDeletePost = async (id: number) => {
+  try {
+    deletingPostId.value = id;
+    const deleteResult = await deletePost(id);
+
+    if (deleteResult._tag === 'Failure') {
+      toast(`Error deleting post: ${deleteResult.error.message}`, 'error');
+      return;
+    }
+
+    if (deleteResult._tag === 'Success' && deleteResult.value.value) {
+      toast('Post deleted successfully', 'success');
+      emit('postDeleted', id);
+    } else {
+      toast('Failed to delete post', 'error');
+    }
+  } finally {
+    deletingPostId.value = null;
+  }
 };
 
 // Define table columns
@@ -63,12 +86,14 @@ const tdClass = 'px-6 py-4 text-center';
               <RouterLink :to="`/posts/new?id=${post.id}`" class="inline-block">
                 <KButton variant="primary" size="sm"> Edit </KButton>
               </RouterLink>
+
               <KButton
                 variant="error"
                 size="sm"
-                @click="confirmAndDeletePost(post.id)"
+                :disabled="deletingPostId === post.id"
+                @click="handleDeletePost(post.id)"
               >
-                Delete
+                {{ deletingPostId === post.id ? 'Deleting...' : 'Delete' }}
               </KButton>
             </div>
           </td>

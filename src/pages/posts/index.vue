@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, Ref } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { debounce } from 'lodash';
 
-import AppContainer from '~/components/layout/AppContainer.vue';
-import AppLoading from '~/components/layout/AppLoading.vue';
+import AppContainer from '~/components/common/AppContainer.vue';
+import AppLoading from '~/components/common/AppLoading.vue';
 import AllPostsTable from '~/components/post/AllPostsTable/index.vue';
 import KButton from '~/components/design-system/KButton/index.vue';
 import KInput from '~/components/design-system/KInput/index.vue';
@@ -14,15 +14,15 @@ import useUserService from '~/services/user-service';
 import type { TError, TPost } from '~/services/post-service/types';
 import type { TUser } from '~/services/user-service/types';
 
-const { getAllPosts, deletePost } = usePostService();
+const { getAllPosts } = usePostService();
 const { getAllUsers } = useUserService();
 
 const posts = ref<TPost[]>([]);
 const users = ref<TUser[]>([]);
 
 const error = ref<TError>(null);
-const deleteError = ref<TError>(null);
 const isFetching = ref(false);
+
 const searchQuery = ref('');
 const debouncedSearchQuery = ref('');
 
@@ -55,21 +55,8 @@ const filteredPosts = computed<TPost[]>(() => {
   );
 });
 
-const handleDeletePost = async (id: number) => {
-  const deleteResult = await deletePost(id);
-
-  if (deleteResult._tag === 'Failure') {
-    deleteError.value = deleteResult.error;
-    alert(`Error deleting post: ${deleteResult.error.message}`); // Simple error alert
-    return;
-  }
-
-  if (deleteResult._tag === 'Success' && deleteResult.value.value) {
-    posts.value = posts.value.filter((post) => post.id !== id);
-    alert('Post deleted successfully!'); // Simple success alert
-  } else {
-    alert('Post could not be deleted');
-  }
+const handlePostDeleted = (id: number) => {
+  posts.value = posts.value.filter(post => post.id !== id);
 };
 
 const fetchData = async (): Promise<void> => {
@@ -136,7 +123,10 @@ onMounted(() => {
     </div>
 
     <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
-      <AllPostsTable :posts="filteredPosts" @deletePost="handleDeletePost" />
+      <AllPostsTable
+        :posts="filteredPosts"
+        @post-deleted="handlePostDeleted"
+      />
     </div>
   </AppContainer>
 </template>

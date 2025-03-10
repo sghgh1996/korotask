@@ -5,14 +5,14 @@ interface ButtonProps {
   variant?: 'primary' | 'success' | 'error';
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
-  size?: 'sm' | 'md' | 'lg'; // New size prop
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   variant: 'primary',
   disabled: false,
   type: 'button',
-  size: 'md' // Default medium size
+  size: 'md'
 });
 
 const emit = defineEmits<{
